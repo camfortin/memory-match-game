@@ -16,11 +16,6 @@ const THEME_STYLES = {
   sports: 'bg-gradient-to-br from-green-500 to-emerald-500'
 };
 
-// Olympic ring symbol for card backs
-const THEME_BACK_ICONS: Record<string, string> = {
-  olympics: '🔵🟡⚫🟢🔴',
-};
-
 interface CardProps {
   id: number;
   imageIndex: number;
@@ -55,17 +50,17 @@ const Card: React.FC<CardProps> = ({ imageIndex, isFlipped, isMatched, onClick, 
         >
           {isOlympics ? (
             <div className="text-center">
-              <div className="text-xs leading-none tracking-tighter">🔵🟡⚫</div>
-              <div className="text-xs leading-none tracking-tighter -mt-0.5">🟢🔴</div>
+              <div className="text-[10px] sm:text-xs leading-none tracking-tighter">🔵🟡⚫</div>
+              <div className="text-[10px] sm:text-xs leading-none tracking-tighter -mt-0.5">🟢🔴</div>
             </div>
           ) : (
-            <div className="w-12 h-12 bg-white/20 rounded-full"></div>
+            <div className="w-8 h-8 sm:w-12 sm:h-12 bg-white/20 rounded-full"></div>
           )}
         </div>
 
         {/* Front of card */}
         <div
-          className={`absolute inset-0 w-full h-full bg-white rounded-lg [transform:rotateY(180deg)] backface-hidden shadow-lg flex items-center justify-center text-[8vh] ${
+          className={`absolute inset-0 w-full h-full bg-white rounded-lg [transform:rotateY(180deg)] backface-hidden shadow-lg flex items-center justify-center text-3xl sm:text-5xl ${
             isOlympics ? 'border-2 border-yellow-400' : ''
           }`}
         >
