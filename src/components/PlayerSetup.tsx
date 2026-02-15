@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import { UserPlus, X, GripVertical } from 'lucide-react';
 import { Player } from '../types';
 import { CARD_THEMES } from './Card';
+import GameStats from './GameStats';
 
 interface PlayerSetupProps {
   players: Player[];
@@ -306,6 +307,9 @@ const PlayerSetup: React.FC<PlayerSetupProps> = ({
               ))}
             </div>
           </div>
+
+          {/* Community Stats from Supabase */}
+          <GameStats isOlympics={isOlympics} />
         </div>
       </div>
     </div>
