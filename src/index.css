@@ -48,12 +48,16 @@ input[type="range"].touch-slider {
 input[type="range"].touch-slider::-webkit-slider-runnable-track {
   height: 12px;
   border-radius: 6px;
+  background: currentColor;
+  opacity: 0.3;
 }
 
 input[type="range"].touch-slider::-moz-range-track {
   height: 12px;
   border-radius: 6px;
   border: none;
+  background: currentColor;
+  opacity: 0.3;
 }
 
 /* Thumb */

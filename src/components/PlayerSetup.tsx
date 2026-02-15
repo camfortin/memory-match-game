@@ -103,7 +103,7 @@ const PlayerSetup: React.FC<PlayerSetupProps> = ({
   };
 
   const themes = [
-    { id: 'olympics', name: 'Olympics', emoji: '🏅' },
+    { id: 'olympics', name: 'Winter', emoji: '❄️' },
     { id: 'fantasy', name: 'Fantasy', emoji: '🏰' },
     { id: 'vehicles', name: 'Vehicles', emoji: '🚗' },
     { id: 'thanksgiving', name: 'Holiday', emoji: '🦃' },
