@@ -3,29 +3,18 @@ import PlayerSetup from './components/PlayerSetup';
 import GameBoard from './components/GameBoard';
 import { Player } from './types';
 import { useGameStats } from './hooks/useGameStats';
+import { CARD_THEMES } from './components/Card';
 import './index.css';
 
 const App: React.FC = () => {
   const [gameStarted, setGameStarted] = useState(false);
   const [players, setPlayers] = useState<Player[]>([
-    { name: 'Lark', score: 0, pairs: [] },
-    { name: 'Willa', score: 0, pairs: [] }
+    { name: '', score: 0, pairs: [] },
+    { name: '', score: 0, pairs: [] }
   ]);
   const [numPairs, setNumPairs] = useState(5);
-  const [isThreePlayers, setIsThreePlayers] = useState(false);
-  const [selectedTheme, setSelectedTheme] = useState<'fantasy' | 'vehicles' | 'thanksgiving' | 'sports'>('fantasy');
+  const [selectedTheme, setSelectedTheme] = useState<keyof typeof CARD_THEMES>('olympics');
   const { incrementGamesPlayed, incrementThemeUsage } = useGameStats();
-
-  const handlePlayerToggle = () => {
-    setIsThreePlayers(prev => {
-      if (!prev) {
-        setPlayers([...players, { name: 'Player 3', score: 0, pairs: [] }]);
-      } else {
-        setPlayers(players.slice(0, 2));
-      }
-      return !prev;
-    });
-  };
 
   const handleStartGame = () => {
     setGameStarted(true);
@@ -41,8 +30,14 @@ const App: React.FC = () => {
     incrementThemeUsage(selectedTheme);
   };
 
+  const isOlympics = selectedTheme === 'olympics';
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-100 to-pink-100 flex flex-col">
+    <div className={`min-h-screen flex flex-col ${
+      isOlympics
+        ? 'bg-gradient-to-br from-blue-50 via-white to-red-50'
+        : 'bg-gradient-to-br from-purple-100 to-pink-100'
+    }`}>
       <div className="flex-grow">
         {!gameStarted ? (
           <PlayerSetup
@@ -50,8 +45,6 @@ const App: React.FC = () => {
             setPlayers={setPlayers}
             numPairs={numPairs}
             setNumPairs={setNumPairs}
-            isThreePlayers={isThreePlayers}
-            onTogglePlayers={handlePlayerToggle}
             onStartGame={handleStartGame}
             selectedTheme={selectedTheme}
             setSelectedTheme={setSelectedTheme}
@@ -69,20 +62,20 @@ const App: React.FC = () => {
       </div>
       <footer className="text-center py-4 text-gray-600 text-sm">
         <p className="mb-2">Made by Cam Fortin for his awesome daughters.</p>
-        <a 
-          href="https://www.linkedin.com/in/camfortin/" 
-          target="_blank" 
+        <a
+          href="https://www.linkedin.com/in/camfortin/"
+          target="_blank"
           rel="noopener noreferrer"
-          className="text-purple-600 hover:text-purple-800 transition-colors"
+          className={`${isOlympics ? 'text-blue-600 hover:text-blue-800' : 'text-purple-600 hover:text-purple-800'} transition-colors`}
         >
           Cam on LinkedIn
         </a>
-          <span> - </span> 
-        <a 
-          href="https://www.producthacker.ai" 
-          target="_blank" 
+          <span> - </span>
+        <a
+          href="https://www.producthacker.ai"
+          target="_blank"
           rel="noopener noreferrer"
-          className="text-purple-600 hover:text-purple-800 transition-colors"
+          className={`${isOlympics ? 'text-blue-600 hover:text-blue-800' : 'text-purple-600 hover:text-purple-800'} transition-colors`}
         >
           Product Hacker AI
         </a>
