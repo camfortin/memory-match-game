@@ -1,33 +1,74 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import PlayerSetup from './components/PlayerSetup';
 import GameBoard from './components/GameBoard';
 import { Player } from './types';
 import { useGameStats } from './hooks/useGameStats';
 import { CARD_THEMES } from './components/Card';
+import { supabase } from './lib/supabase';
 import './index.css';
 
+const PLAYER_NAMES_KEY = 'memory_match_player_names';
+const DEFAULT_NAMES = ['Willa', 'Lark'];
+
+function loadSavedNames(): string[] {
+  try {
+    const saved = localStorage.getItem(PLAYER_NAMES_KEY);
+    if (saved) return JSON.parse(saved);
+  } catch {}
+  return DEFAULT_NAMES;
+}
+
 const App: React.FC = () => {
+  const savedNames = loadSavedNames();
   const [gameStarted, setGameStarted] = useState(false);
   const [players, setPlayers] = useState<Player[]>([
-    { name: '', score: 0, pairs: [] },
-    { name: '', score: 0, pairs: [] }
+    { name: savedNames[0] || DEFAULT_NAMES[0], score: 0, pairs: [] },
+    { name: savedNames[1] || DEFAULT_NAMES[1], score: 0, pairs: [] }
   ]);
   const [numPairs, setNumPairs] = useState(5);
   const [selectedTheme, setSelectedTheme] = useState<keyof typeof CARD_THEMES>('olympics');
   const { incrementGamesPlayed, incrementThemeUsage } = useGameStats();
+  const gameStartTimeRef = useRef<number>(0);
+
+  const updatePlayers = (newPlayers: Player[]) => {
+    setPlayers(newPlayers);
+    try {
+      localStorage.setItem(PLAYER_NAMES_KEY, JSON.stringify(newPlayers.map(p => p.name)));
+    } catch {}
+  };
 
   const handleStartGame = () => {
+    gameStartTimeRef.current = Date.now();
     setGameStarted(true);
   };
 
   const handleGameEnd = () => {
     setGameStarted(false);
-    setPlayers(players.map(p => ({ ...p, score: 0, pairs: [] })));
+    updatePlayers(players.map(p => ({ ...p, score: 0, pairs: [] })));
   };
 
   const handleGameComplete = () => {
     incrementGamesPlayed();
     incrementThemeUsage(selectedTheme);
+    logGameToSupabase();
+  };
+
+  const logGameToSupabase = async () => {
+    if (!supabase) return;
+    const durationSeconds = Math.round((Date.now() - gameStartTimeRef.current) / 1000);
+    const highScore = Math.max(...players.map(p => p.score));
+    const winners = players.filter(p => p.score === highScore).map(p => p.name);
+    try {
+      await supabase.from('mem_game_logs').insert({
+        player_names: players.map(p => p.name),
+        player_scores: players.map(p => p.score),
+        winner_names: winners,
+        theme: selectedTheme,
+        num_pairs: numPairs,
+        num_players: players.length,
+        duration_seconds: durationSeconds,
+      });
+    } catch {}
   };
 
   const isOlympics = selectedTheme === 'olympics';
@@ -42,7 +83,7 @@ const App: React.FC = () => {
         {!gameStarted ? (
           <PlayerSetup
             players={players}
-            setPlayers={setPlayers}
+            setPlayers={updatePlayers}
             numPairs={numPairs}
             setNumPairs={setNumPairs}
             onStartGame={handleStartGame}
@@ -52,7 +93,7 @@ const App: React.FC = () => {
         ) : (
           <GameBoard
             players={players}
-            setPlayers={setPlayers}
+            setPlayers={updatePlayers}
             numPairs={numPairs}
             onGameEnd={handleGameEnd}
             onGameComplete={handleGameComplete}

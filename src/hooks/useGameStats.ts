@@ -10,7 +10,8 @@ const defaultStats: GameStats = {
     fantasy: 0,
     vehicles: 0,
     thanksgiving: 0,
-    sports: 0
+    sports: 0,
+    easter: 0
   },
   lastVisit: new Date().toISOString()
 };

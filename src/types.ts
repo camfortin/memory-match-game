@@ -10,6 +10,7 @@ export interface ThemeStats {
   vehicles: number;
   thanksgiving: number;
   sports: number;
+  easter: number;
 }
 
 export interface GameStats {
