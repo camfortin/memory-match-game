@@ -5,6 +5,7 @@ export interface Player {
 }
 
 export interface ThemeStats {
+  olympics: number;
   fantasy: number;
   vehicles: number;
   thanksgiving: number;

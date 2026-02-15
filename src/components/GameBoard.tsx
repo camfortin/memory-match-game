@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Player } from '../types';
-import { Trophy, RotateCcw } from 'lucide-react';
+import { Trophy, Medal, RotateCcw } from 'lucide-react';
 import Card, { CARD_THEMES } from './Card';
 
 interface GameBoardProps {
@@ -19,13 +19,15 @@ interface CardType {
   isMatched: boolean;
 }
 
-const GameBoard: React.FC<GameBoardProps> = ({ 
-  players, 
-  setPlayers, 
-  numPairs, 
+const MEDAL_EMOJIS = ['🥇', '🥈', '🥉'];
+
+const GameBoard: React.FC<GameBoardProps> = ({
+  players,
+  setPlayers,
+  numPairs,
   onGameEnd,
   onGameComplete,
-  selectedTheme 
+  selectedTheme
 }) => {
   const [cards, setCards] = useState<CardType[]>([]);
   const [currentPlayer, setCurrentPlayer] = useState(0);
@@ -35,6 +37,17 @@ const GameBoard: React.FC<GameBoardProps> = ({
   const [showTurnMessage, setShowTurnMessage] = useState(false);
   const [gameCompleted, setGameCompleted] = useState(false);
   const [isInitializing, setIsInitializing] = useState(true);
+
+  const isOlympics = selectedTheme === 'olympics';
+
+  // Olympic ring colors for player indicators
+  const olympicPlayerColors = [
+    { bg: 'bg-blue-600', text: 'text-white', light: 'bg-blue-100' },
+    { bg: 'bg-yellow-400', text: 'text-gray-900', light: 'bg-yellow-100' },
+    { bg: 'bg-gray-800', text: 'text-white', light: 'bg-gray-200' },
+    { bg: 'bg-green-500', text: 'text-white', light: 'bg-green-100' },
+    { bg: 'bg-red-500', text: 'text-white', light: 'bg-red-100' },
+  ];
 
   // Initialize game
   useEffect(() => {
@@ -46,8 +59,7 @@ const GameBoard: React.FC<GameBoardProps> = ({
     const shuffledCards = [...cardPairs].sort(() => Math.random() - 0.5);
     setCards(shuffledCards);
     setGameCompleted(false);
-    
-    // Add a small delay before showing the cards
+
     setTimeout(() => {
       setIsInitializing(false);
     }, 100);
@@ -67,7 +79,7 @@ const GameBoard: React.FC<GameBoardProps> = ({
       return;
     }
 
-    setCards(prevCards => 
+    setCards(prevCards =>
       prevCards.map(card =>
         card.id === clickedCard.id ? { ...card, isFlipped: true } : card
       )
@@ -133,29 +145,51 @@ const GameBoard: React.FC<GameBoardProps> = ({
     return { winners, sortedPlayers };
   };
 
+  // Assign medal positions (handles ties)
+  const getMedalIndex = (sortedPlayers: Player[], playerIndex: number): number | null => {
+    if (playerIndex === 0) return 0;
+    const prevPlayer = sortedPlayers[playerIndex - 1];
+    const currPlayer = sortedPlayers[playerIndex];
+    if (currPlayer.score === prevPlayer.score) {
+      // Same medal as previous
+      return getMedalIndex(sortedPlayers, playerIndex - 1);
+    }
+    return Math.min(playerIndex, 2);
+  };
+
   if (isInitializing) {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-purple-600"></div>
+          <div className={`animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 ${
+            isOlympics ? 'border-blue-600' : 'border-purple-600'
+          }`}></div>
         </div>
       </div>
     );
   }
 
+  const currentColors = isOlympics
+    ? olympicPlayerColors[currentPlayer % olympicPlayerColors.length]
+    : { bg: 'bg-purple-600', text: 'text-white', light: 'bg-purple-100' };
+
   return (
     <div className="container mx-auto px-4 py-8">
       {showTurnMessage && (
-        <div className="fixed top-4 left-1/2 transform -translate-x-1/2 bg-purple-600 text-white px-6 py-3 rounded-lg shadow-lg z-50">
+        <div className={`fixed top-4 left-1/2 transform -translate-x-1/2 px-6 py-3 rounded-lg shadow-lg z-50 ${
+          isOlympics
+            ? `${olympicPlayerColors[currentPlayer % olympicPlayerColors.length].bg} text-white`
+            : 'bg-purple-600 text-white'
+        }`}>
           {players[currentPlayer].name}'s turn!
         </div>
       )}
-      
-      <div className="mb-8 flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-purple-600">
+
+      <div className="mb-8 flex flex-wrap justify-between items-center gap-4">
+        <h2 className={`text-2xl font-bold ${isOlympics ? 'text-blue-600' : 'text-purple-600'}`}>
           {players[currentPlayer].name}'s turn
         </h2>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-4 flex-wrap">
           <button
             onClick={onGameEnd}
             className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
@@ -163,19 +197,24 @@ const GameBoard: React.FC<GameBoardProps> = ({
             <RotateCcw className="w-4 h-4" />
             <span>Start Over</span>
           </button>
-          <div className="flex gap-4">
-            {players.map((player, index) => (
-              <div
-                key={index}
-                className={`px-4 py-2 rounded-lg ${
-                  currentPlayer === index
-                    ? 'bg-purple-600 text-white'
-                    : 'bg-gray-100'
-                }`}
-              >
-                {player.name}: {player.score}
-              </div>
-            ))}
+          <div className="flex gap-2 flex-wrap">
+            {players.map((player, index) => {
+              const colors = isOlympics
+                ? olympicPlayerColors[index % olympicPlayerColors.length]
+                : { bg: 'bg-purple-600', text: 'text-white', light: 'bg-gray-100' };
+              return (
+                <div
+                  key={index}
+                  className={`px-4 py-2 rounded-lg font-medium ${
+                    currentPlayer === index
+                      ? `${colors.bg} ${colors.text}`
+                      : colors.light
+                  }`}
+                >
+                  {player.name}: {player.score}
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>
@@ -194,53 +233,93 @@ const GameBoard: React.FC<GameBoardProps> = ({
         ))}
       </div>
 
-      <div className="grid grid-cols-3 gap-4">
-        {players.map((player, index) => (
-          <div key={index} className="bg-white p-4 rounded-lg shadow">
-            <h3 className="font-semibold mb-2">{player.name}'s Pairs</h3>
-            <div className="flex flex-wrap gap-2">
-              {player.pairs.map((emoji, pairIndex) => (
-                <div
-                  key={pairIndex}
-                  className="w-12 h-12 flex items-center justify-center bg-purple-100 rounded-lg text-4xl"
-                >
-                  {emoji}
-                </div>
-              ))}
+      <div className={`grid gap-4`} style={{ gridTemplateColumns: `repeat(${Math.min(players.length, 5)}, minmax(0, 1fr))` }}>
+        {players.map((player, index) => {
+          const colors = isOlympics
+            ? olympicPlayerColors[index % olympicPlayerColors.length]
+            : { bg: 'bg-purple-600', text: 'text-white', light: 'bg-purple-100' };
+          return (
+            <div key={index} className="bg-white p-4 rounded-lg shadow">
+              <h3 className="font-semibold mb-2">{player.name}'s Pairs</h3>
+              <div className="flex flex-wrap gap-2">
+                {player.pairs.map((emoji, pairIndex) => (
+                  <div
+                    key={pairIndex}
+                    className={`w-12 h-12 flex items-center justify-center rounded-lg text-4xl ${colors.light}`}
+                  >
+                    {emoji}
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
+      {/* Game Over Modal */}
       {gameOver && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-8 rounded-lg shadow-xl">
-            <h2 className="text-2xl font-bold mb-4">Game Over!</h2>
+          <div className={`bg-white p-8 rounded-xl shadow-2xl max-w-md w-full mx-4 ${
+            isOlympics ? 'border-t-4 border-yellow-400' : ''
+          }`}>
+            {isOlympics && (
+              <div className="flex justify-center gap-1 text-lg mb-2">
+                <span className="text-blue-500">&#9679;</span>
+                <span className="text-yellow-400">&#9679;</span>
+                <span className="text-gray-800">&#9679;</span>
+                <span className="text-green-500">&#9679;</span>
+                <span className="text-red-500">&#9679;</span>
+              </div>
+            )}
+            <h2 className={`text-2xl font-bold mb-4 text-center ${
+              isOlympics ? 'text-blue-800' : ''
+            }`}>
+              {isOlympics ? 'Ceremony Time!' : 'Game Over!'}
+            </h2>
             {(() => {
               const { winners, sortedPlayers } = getGameResults();
               return (
                 <>
                   {winners.length > 1 ? (
-                    <p className="mb-4">It's a tie between {winners.map(w => w.name).join(' and ')}!</p>
+                    <p className="mb-4 text-center text-lg">
+                      It's a tie between {winners.map(w => w.name).join(' and ')}!
+                    </p>
                   ) : (
-                    <p className="mb-4">🎉 {winners[0].name} wins!</p>
+                    <p className="mb-4 text-center text-lg">
+                      {isOlympics ? '🏅' : '🎉'} {winners[0].name} wins {isOlympics ? 'the gold!' : '!'}
+                    </p>
                   )}
-                  <div className="space-y-2 mb-4">
-                    {sortedPlayers.map((player, index) => (
-                      <div key={index} className="flex items-center gap-2">
-                        {winners.includes(player) && <Trophy className="text-yellow-500" />}
-                        <span>{player.name}: {player.score} pairs</span>
-                      </div>
-                    ))}
+                  <div className="space-y-2 mb-6">
+                    {sortedPlayers.map((player, index) => {
+                      const medalIdx = getMedalIndex(sortedPlayers, index);
+                      const medal = medalIdx !== null && medalIdx < 3 ? MEDAL_EMOJIS[medalIdx] : null;
+                      return (
+                        <div key={index} className={`flex items-center gap-3 p-2 rounded-lg ${
+                          index === 0 && isOlympics ? 'bg-yellow-50' : ''
+                        }`}>
+                          <span className="text-2xl w-8 text-center">
+                            {isOlympics && medal ? medal : (
+                              winners.includes(player) ? <Trophy className="text-yellow-500 inline w-6 h-6" /> : null
+                            )}
+                          </span>
+                          <span className="font-medium flex-1">{player.name}</span>
+                          <span className="text-gray-600">{player.score} pairs</span>
+                        </div>
+                      );
+                    })}
                   </div>
                 </>
               );
             })()}
             <button
               onClick={onGameEnd}
-              className="w-full py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
+              className={`w-full py-3 text-white rounded-lg font-semibold ${
+                isOlympics
+                  ? 'bg-gradient-to-r from-blue-600 via-yellow-500 to-red-500 hover:opacity-90'
+                  : 'bg-purple-600 hover:bg-purple-700'
+              }`}
             >
-              Play Again
+              {isOlympics ? 'New Event' : 'Play Again'}
             </button>
           </div>
         </div>
