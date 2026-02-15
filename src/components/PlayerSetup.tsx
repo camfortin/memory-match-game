@@ -107,7 +107,8 @@ const PlayerSetup: React.FC<PlayerSetupProps> = ({
     { id: 'fantasy', name: 'Fantasy', emoji: '🏰' },
     { id: 'vehicles', name: 'Vehicles', emoji: '🚗' },
     { id: 'thanksgiving', name: 'Holiday', emoji: '🦃' },
-    { id: 'sports', name: 'Sports', emoji: '⚽' }
+    { id: 'sports', name: 'Sports', emoji: '⚽' },
+    { id: 'easter', name: 'Easter', emoji: '🐰' }
   ] as const;
 
   const totalCards = numPairs * 2;
@@ -249,7 +250,7 @@ const PlayerSetup: React.FC<PlayerSetupProps> = ({
             <h3 className={`text-lg font-bold mb-3 ${isOlympics ? 'text-blue-800' : 'text-purple-800'}`}>
               Theme
             </h3>
-            <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
+            <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
               {themes.map((theme) => (
                 <button
                   key={theme.id}

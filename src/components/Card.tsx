@@ -5,7 +5,8 @@ export const CARD_THEMES = {
   fantasy: ['🦄', '👸', '🏰', '🐉', '🧚', '🧙‍♂️', '🗡️', '👑', '🔮', '🧝‍♀️'],
   vehicles: ['🚗', '🚕', '🚙', '🚌', '🚎', '🏎️', '🚓', '🚑', '🚒', '🚛'],
   thanksgiving: ['🦃', '🥧', '🌽', '🥔', '🥖', '🍗', '🍽️', '🍁', '🎃', '👨‍👩‍👧‍👦'],
-  sports: ['⚽', '🏀', '🏈', '⚾', '🎾', '🏐', '🏉', '🎳', '🏓', '⛳']
+  sports: ['⚽', '🏀', '🏈', '⚾', '🎾', '🏐', '🏉', '🎳', '🏓', '⛳'],
+  easter: ['🐰', '🥚', '🐣', '🌷', '🦋', '🐑', '🌸', '🧺', '🐥', '🌈']
 };
 
 const THEME_STYLES = {
@@ -13,7 +14,8 @@ const THEME_STYLES = {
   fantasy: 'bg-gradient-to-br from-purple-500 to-pink-500',
   vehicles: 'bg-gradient-to-br from-blue-500 to-cyan-500',
   thanksgiving: 'bg-gradient-to-br from-orange-500 to-amber-500',
-  sports: 'bg-gradient-to-br from-green-500 to-emerald-500'
+  sports: 'bg-gradient-to-br from-green-500 to-emerald-500',
+  easter: 'bg-gradient-to-br from-pink-400 via-yellow-300 to-green-400'
 };
 
 interface CardProps {
