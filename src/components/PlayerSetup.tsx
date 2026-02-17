@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
-import { UserPlus, X, GripVertical } from 'lucide-react';
-import { Player } from '../types';
+import { UserPlus, X, GripVertical, Monitor, User, Users } from 'lucide-react';
+import { Player, GameMode, ComputerDifficulty } from '../types';
 import { CARD_THEMES } from './Card';
 import GameStats from './GameStats';
 
@@ -12,6 +12,10 @@ interface PlayerSetupProps {
   onStartGame: () => void;
   selectedTheme: keyof typeof CARD_THEMES;
   setSelectedTheme: (theme: keyof typeof CARD_THEMES) => void;
+  gameMode: GameMode;
+  onGameModeChange: (mode: GameMode) => void;
+  computerDifficulty: ComputerDifficulty;
+  setComputerDifficulty: (difficulty: ComputerDifficulty) => void;
 }
 
 const MAX_PLAYERS = 5;
@@ -25,6 +29,10 @@ const PlayerSetup: React.FC<PlayerSetupProps> = ({
   onStartGame,
   selectedTheme,
   setSelectedTheme,
+  gameMode,
+  onGameModeChange,
+  computerDifficulty,
+  setComputerDifficulty,
 }) => {
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const [dragging, setDragging] = useState(false);
@@ -126,7 +134,19 @@ const PlayerSetup: React.FC<PlayerSetupProps> = ({
     'bg-red-500 text-white',
   ];
 
-  const hasEmptyNames = players.some(p => p.name.trim() === '');
+  const hasEmptyNames = players.some(p => p.name.trim() === '' && p.name !== 'Computer');
+
+  const gameModes: { id: GameMode; label: string; icon: React.ReactNode }[] = [
+    { id: 'multiplayer', label: 'Multiplayer', icon: <Users className="w-4 h-4" /> },
+    { id: 'vs-computer', label: 'vs Computer', icon: <Monitor className="w-4 h-4" /> },
+    { id: 'solo', label: 'Solo', icon: <User className="w-4 h-4" /> },
+  ];
+
+  const difficulties: { id: ComputerDifficulty; label: string; description: string }[] = [
+    { id: 'easy', label: 'Easy', description: 'Forgetful' },
+    { id: 'medium', label: 'Medium', description: 'Sometimes remembers' },
+    { id: 'hard', label: 'Hard', description: 'Sharp memory' },
+  ];
 
   return (
     <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 max-w-2xl">
@@ -155,63 +175,143 @@ const PlayerSetup: React.FC<PlayerSetupProps> = ({
         </div>
 
         <div className="space-y-5 sm:space-y-6">
+          {/* Game Mode Selector */}
+          <div className={`p-3 sm:p-4 rounded-lg ${isOlympics ? 'bg-blue-50' : 'bg-purple-50'}`}>
+            <h3 className={`text-lg font-bold mb-3 ${isOlympics ? 'text-blue-800' : 'text-purple-800'}`}>
+              Game Mode
+            </h3>
+            <div className="grid grid-cols-3 gap-2">
+              {gameModes.map((mode) => (
+                <button
+                  key={mode.id}
+                  onClick={() => onGameModeChange(mode.id)}
+                  className={`h-12 rounded-lg transition-all flex items-center justify-center gap-1.5 active:scale-95 text-sm ${
+                    gameMode === mode.id
+                      ? isOlympics
+                        ? 'bg-blue-600 text-white shadow-lg'
+                        : 'bg-purple-600 text-white shadow-lg'
+                      : 'bg-white hover:bg-gray-100'
+                  }`}
+                >
+                  {mode.icon}
+                  <span className="whitespace-nowrap">{mode.label}</span>
+                </button>
+              ))}
+            </div>
+
+            {/* Difficulty selector for vs-computer */}
+            {gameMode === 'vs-computer' && (
+              <div className="mt-3 space-y-2">
+                <h4 className={`text-sm font-semibold ${isOlympics ? 'text-blue-700' : 'text-purple-700'}`}>
+                  Difficulty
+                </h4>
+                <div className="grid grid-cols-3 gap-2">
+                  {difficulties.map((diff) => (
+                    <button
+                      key={diff.id}
+                      onClick={() => setComputerDifficulty(diff.id)}
+                      className={`py-2 px-2 rounded-lg transition-all text-center active:scale-95 ${
+                        computerDifficulty === diff.id
+                          ? isOlympics
+                            ? 'bg-blue-500 text-white shadow'
+                            : 'bg-purple-500 text-white shadow'
+                          : 'bg-white hover:bg-gray-100 border border-gray-200'
+                      }`}
+                    >
+                      <div className="text-sm font-medium">{diff.label}</div>
+                      <div className={`text-xs ${
+                        computerDifficulty === diff.id ? 'text-white/80' : 'text-gray-400'
+                      }`}>
+                        {diff.description}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Solo mode description */}
+            {gameMode === 'solo' && (
+              <p className={`mt-3 text-sm ${isOlympics ? 'text-blue-600' : 'text-purple-600'}`}>
+                Match all pairs on your own. See how few turns you can do it in!
+              </p>
+            )}
+          </div>
+
           {/* Players Section */}
           <div>
             <div className="flex items-center justify-between mb-3">
               <h2 className={`text-lg sm:text-xl font-semibold ${isOlympics ? 'text-blue-700' : 'text-gray-700'}`}>
-                Competitors
+                {gameMode === 'multiplayer' ? 'Competitors' : gameMode === 'vs-computer' ? 'Players' : 'Player'}
               </h2>
-              <span className="text-sm text-gray-400">
-                {players.length}/{MAX_PLAYERS} players
-              </span>
+              {gameMode === 'multiplayer' && (
+                <span className="text-sm text-gray-400">
+                  {players.length}/{MAX_PLAYERS} players
+                </span>
+              )}
             </div>
 
             <div className="space-y-2">
-              {players.map((player, index) => (
-                <div
-                  key={index}
-                  ref={el => playerRefs.current[index] = el}
-                  className={`flex items-center gap-2 sm:gap-3 bg-gray-50 rounded-lg p-2 transition-all ${
-                    activeIndex === index ? 'opacity-50 scale-[1.02]' : ''
-                  }`}
-                >
+              {players.map((player, index) => {
+                const isComputer = player.name === 'Computer' && gameMode === 'vs-computer';
+                return (
                   <div
-                    className="flex items-center justify-center w-10 h-10 shrink-0 text-gray-400 hover:text-gray-600 cursor-grab active:cursor-grabbing touch-none select-none"
-                    onMouseDown={(e) => handleDragStart(index, e)}
-                    onTouchStart={(e) => handleDragStart(index, e)}
-                  >
-                    <GripVertical className="w-5 h-5" />
-                  </div>
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold shrink-0 ${
-                    isOlympics ? olympicColors[index % olympicColors.length] : 'bg-purple-100 text-purple-700'
-                  }`}>
-                    {index + 1}
-                  </div>
-                  <input
-                    type="text"
-                    value={player.name}
-                    onChange={(e) => handleNameChange(index, e.target.value)}
-                    className={`flex-1 min-w-0 px-3 sm:px-4 py-2 border rounded-lg focus:ring-2 focus:border-transparent text-base ${
-                      isOlympics
-                        ? 'border-blue-200 focus:ring-blue-400'
-                        : 'border-gray-300 focus:ring-purple-500'
+                    key={index}
+                    ref={el => playerRefs.current[index] = el}
+                    className={`flex items-center gap-2 sm:gap-3 bg-gray-50 rounded-lg p-2 transition-all ${
+                      activeIndex === index ? 'opacity-50 scale-[1.02]' : ''
                     }`}
-                    placeholder={`Player ${index + 1} name`}
-                  />
-                  {players.length > MIN_PLAYERS && (
-                    <button
-                      onClick={() => removePlayer(index)}
-                      className="flex items-center justify-center w-10 h-10 shrink-0 text-gray-400 hover:text-red-500 active:text-red-600 transition-colors"
-                      title="Remove player"
-                    >
-                      <X className="w-5 h-5" />
-                    </button>
-                  )}
-                </div>
-              ))}
+                  >
+                    {gameMode === 'multiplayer' && (
+                      <div
+                        className="flex items-center justify-center w-10 h-10 shrink-0 text-gray-400 hover:text-gray-600 cursor-grab active:cursor-grabbing touch-none select-none"
+                        onMouseDown={(e) => handleDragStart(index, e)}
+                        onTouchStart={(e) => handleDragStart(index, e)}
+                      >
+                        <GripVertical className="w-5 h-5" />
+                      </div>
+                    )}
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold shrink-0 ${
+                      isOlympics ? olympicColors[index % olympicColors.length] : 'bg-purple-100 text-purple-700'
+                    }`}>
+                      {isComputer ? (
+                        <Monitor className="w-4 h-4" />
+                      ) : (
+                        index + 1
+                      )}
+                    </div>
+                    {isComputer ? (
+                      <div className="flex-1 min-w-0 px-3 sm:px-4 py-2 text-gray-500 italic">
+                        Computer ({computerDifficulty})
+                      </div>
+                    ) : (
+                      <input
+                        type="text"
+                        value={player.name}
+                        onChange={(e) => handleNameChange(index, e.target.value)}
+                        className={`flex-1 min-w-0 px-3 sm:px-4 py-2 border rounded-lg focus:ring-2 focus:border-transparent text-base ${
+                          isOlympics
+                            ? 'border-blue-200 focus:ring-blue-400'
+                            : 'border-gray-300 focus:ring-purple-500'
+                        }`}
+                        placeholder={`Player ${index + 1} name`}
+                      />
+                    )}
+                    {gameMode === 'multiplayer' && players.length > MIN_PLAYERS && (
+                      <button
+                        onClick={() => removePlayer(index)}
+                        className="flex items-center justify-center w-10 h-10 shrink-0 text-gray-400 hover:text-red-500 active:text-red-600 transition-colors"
+                        title="Remove player"
+                      >
+                        <X className="w-5 h-5" />
+                      </button>
+                    )}
+                  </div>
+                );
+              })}
             </div>
 
-            {players.length < MAX_PLAYERS && (
+            {gameMode === 'multiplayer' && players.length < MAX_PLAYERS && (
               <button
                 onClick={addPlayer}
                 className={`mt-2 w-full flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed rounded-lg transition-colors ${
@@ -238,11 +338,17 @@ const PlayerSetup: React.FC<PlayerSetupProps> = ({
                   : 'bg-gradient-to-r from-purple-600 to-pink-600 hover:opacity-90 active:opacity-80'
             }`}
           >
-            {isOlympics ? 'Let the Games Begin!' : "Let's Play!"}
+            {gameMode === 'solo'
+              ? 'Start Training'
+              : gameMode === 'vs-computer'
+                ? 'Challenge Computer'
+                : isOlympics ? 'Let the Games Begin!' : "Let's Play!"}
           </button>
           {hasEmptyNames && (
             <p className="text-sm text-red-400 text-center -mt-3">
-              All players need a name to compete
+              {gameMode === 'multiplayer'
+                ? 'All players need a name to compete'
+                : 'Enter your name to start'}
             </p>
           )}
 
