@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import PlayerSetup from './components/PlayerSetup';
 import GameBoard from './components/GameBoard';
-import { Player } from './types';
+import { Player, GameMode, ComputerDifficulty } from './types';
 import { useGameStats } from './hooks/useGameStats';
 import { CARD_THEMES } from './components/Card';
 import { supabase } from './lib/supabase';
@@ -27,14 +27,49 @@ const App: React.FC = () => {
   ]);
   const [numPairs, setNumPairs] = useState(5);
   const [selectedTheme, setSelectedTheme] = useState<keyof typeof CARD_THEMES>('olympics');
+  const [gameMode, setGameMode] = useState<GameMode>('multiplayer');
+  const [computerDifficulty, setComputerDifficulty] = useState<ComputerDifficulty>('medium');
   const { incrementGamesPlayed, incrementThemeUsage } = useGameStats();
   const gameStartTimeRef = useRef<number>(0);
+
+  // Store the original multiplayer players so we can restore them when switching modes
+  const multiplayerPlayersRef = useRef<Player[]>(players);
 
   const updatePlayers = (newPlayers: Player[]) => {
     setPlayers(newPlayers);
     try {
-      localStorage.setItem(PLAYER_NAMES_KEY, JSON.stringify(newPlayers.map(p => p.name)));
+      const namesToSave = newPlayers.filter(p => p.name !== 'Computer').map(p => p.name);
+      if (namesToSave.length > 0) {
+        localStorage.setItem(PLAYER_NAMES_KEY, JSON.stringify(namesToSave));
+      }
     } catch {}
+  };
+
+  const handleGameModeChange = (mode: GameMode) => {
+    if (mode === gameMode) return;
+
+    // Save current multiplayer players before switching away
+    if (gameMode === 'multiplayer') {
+      multiplayerPlayersRef.current = players;
+    }
+
+    setGameMode(mode);
+
+    const firstName = players[0]?.name || savedNames[0] || DEFAULT_NAMES[0];
+
+    if (mode === 'vs-computer') {
+      setPlayers([
+        { name: firstName, score: 0, pairs: [] },
+        { name: 'Computer', score: 0, pairs: [] }
+      ]);
+    } else if (mode === 'solo') {
+      setPlayers([
+        { name: firstName, score: 0, pairs: [] }
+      ]);
+    } else {
+      // Restore multiplayer players
+      setPlayers(multiplayerPlayersRef.current);
+    }
   };
 
   const handleStartGame = () => {
@@ -89,6 +124,10 @@ const App: React.FC = () => {
             onStartGame={handleStartGame}
             selectedTheme={selectedTheme}
             setSelectedTheme={setSelectedTheme}
+            gameMode={gameMode}
+            onGameModeChange={handleGameModeChange}
+            computerDifficulty={computerDifficulty}
+            setComputerDifficulty={setComputerDifficulty}
           />
         ) : (
           <GameBoard
@@ -98,6 +137,8 @@ const App: React.FC = () => {
             onGameEnd={handleGameEnd}
             onGameComplete={handleGameComplete}
             selectedTheme={selectedTheme}
+            gameMode={gameMode}
+            computerDifficulty={computerDifficulty}
           />
         )}
       </div>

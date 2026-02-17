@@ -62,7 +62,7 @@ const Card: React.FC<CardProps> = ({ imageIndex, isFlipped, isMatched, onClick, 
 
         {/* Front of card */}
         <div
-          className={`absolute inset-0 w-full h-full bg-white rounded-lg [transform:rotateY(180deg)] backface-hidden shadow-lg flex items-center justify-center text-3xl sm:text-5xl ${
+          className={`absolute inset-0 w-full h-full bg-white rounded-lg [transform:rotateY(180deg)] backface-hidden shadow-lg flex items-center justify-center text-4xl sm:text-6xl ${
             isOlympics ? 'border-2 border-yellow-400' : ''
           }`}
         >
