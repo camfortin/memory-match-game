@@ -289,7 +289,7 @@ const PlayerSetup: React.FC<PlayerSetupProps> = ({
                         type="text"
                         value={player.name}
                         onChange={(e) => handleNameChange(index, e.target.value)}
-                        className={`flex-1 min-w-0 px-3 sm:px-4 py-2 border rounded-lg focus:ring-2 focus:border-transparent text-base ${
+                        className={`flex-1 min-w-0 px-3 sm:px-4 py-2 border rounded-lg focus:ring-2 focus:border-transparent text-base bg-white text-gray-900 ${
                           isOlympics
                             ? 'border-blue-200 focus:ring-blue-400'
                             : 'border-gray-300 focus:ring-purple-500'
