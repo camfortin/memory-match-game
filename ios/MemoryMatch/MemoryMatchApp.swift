@@ -8,6 +8,7 @@ struct MemoryMatchApp: App {
         WindowGroup {
             ContentView()
                 .environment(gameState)
+                .preferredColorScheme(.light)
         }
     }
 }
