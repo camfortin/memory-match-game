@@ -22,12 +22,19 @@ struct GameBoardView: View {
                     .transition(.move(edge: .top).combined(with: .opacity))
             }
 
+            // Computer thinking overlay
+            if gameState.isComputerThinking {
+                computerThinkingOverlay
+                    .transition(.move(edge: .top).combined(with: .opacity))
+            }
+
             // Game over modal
             if gameState.gameOver {
                 GameOverView()
             }
         }
         .animation(.easeInOut(duration: 0.3), value: gameState.showTurnMessage)
+        .animation(.easeInOut(duration: 0.3), value: gameState.isComputerThinking)
     }
 
     // MARK: - Header
@@ -35,10 +42,17 @@ struct GameBoardView: View {
     private var headerSection: some View {
         VStack(spacing: 10) {
             HStack {
-                Text("\(gameState.players[gameState.currentPlayer].name)'s turn")
-                    .font(.system(size: 20, weight: .bold))
-                    .foregroundStyle(gameState.selectedTheme.accentColor)
-                    .lineLimit(1)
+                if gameState.isSolo {
+                    Text("\(gameState.players[0].name) — Turn \(gameState.soloTurns)")
+                        .font(.system(size: 20, weight: .bold))
+                        .foregroundStyle(gameState.selectedTheme.accentColor)
+                        .lineLimit(1)
+                } else {
+                    Text("\(gameState.players[gameState.currentPlayer].name)'s turn")
+                        .font(.system(size: 20, weight: .bold))
+                        .foregroundStyle(gameState.selectedTheme.accentColor)
+                        .lineLimit(1)
+                }
 
                 Spacer()
 
@@ -59,12 +73,23 @@ struct GameBoardView: View {
                 .foregroundStyle(.primary)
             }
 
-            // Score pills
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 6) {
-                    ForEach(Array(gameState.players.enumerated()), id: \.element.id) { index, player in
-                        scorePill(player: player, index: index)
+            // Score pills (not shown in solo mode)
+            if !gameState.isSolo {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 6) {
+                        ForEach(Array(gameState.players.enumerated()), id: \.element.id) { index, player in
+                            scorePill(player: player, index: index)
+                        }
                     }
+                }
+            }
+
+            // Solo mode: show pairs found
+            if gameState.isSolo {
+                HStack(spacing: 4) {
+                    Text("\(gameState.players[0].score) / \(gameState.numPairs) pairs found")
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundStyle(gameState.selectedTheme.accentColor)
                 }
             }
         }
@@ -74,13 +99,19 @@ struct GameBoardView: View {
         let colors = gameState.selectedTheme.playerColor(at: index)
         let isCurrent = gameState.currentPlayer == index
 
-        return Text("\(player.name): \(player.score)")
-            .font(.system(size: 13, weight: .medium))
-            .foregroundStyle(isCurrent ? colors.text : Color(white: 0.25))
-            .padding(.horizontal, 12)
-            .padding(.vertical, 6)
-            .background(isCurrent ? colors.bg : colors.light)
-            .clipShape(RoundedRectangle(cornerRadius: 8))
+        return HStack(spacing: 4) {
+            if player.name == "Computer" && gameState.isVsComputer {
+                Image(systemName: "desktopcomputer")
+                    .font(.system(size: 11))
+            }
+            Text("\(player.name): \(player.score)")
+                .font(.system(size: 13, weight: .medium))
+        }
+        .foregroundStyle(isCurrent ? colors.text : Color(white: 0.25))
+        .padding(.horizontal, 12)
+        .padding(.vertical, 6)
+        .background(isCurrent ? colors.bg : colors.light)
+        .clipShape(RoundedRectangle(cornerRadius: 8))
     }
 
     // MARK: - Card Grid
@@ -102,9 +133,11 @@ struct GameBoardView: View {
     // MARK: - Player Pairs
 
     private var pairsSection: some View {
-        let columns = sizeClass == .regular
-            ? Array(repeating: GridItem(.flexible(), spacing: 8), count: min(gameState.players.count, 5))
-            : Array(repeating: GridItem(.flexible(), spacing: 6), count: 2)
+        let columns: [GridItem] = gameState.isSolo
+            ? [GridItem(.flexible())]
+            : sizeClass == .regular
+                ? Array(repeating: GridItem(.flexible(), spacing: 8), count: min(gameState.players.count, 5))
+                : Array(repeating: GridItem(.flexible(), spacing: 6), count: 2)
 
         return LazyVGrid(columns: columns, spacing: sizeClass == .regular ? 8 : 6) {
             ForEach(Array(gameState.players.enumerated()), id: \.element.id) { index, player in
@@ -117,9 +150,15 @@ struct GameBoardView: View {
         let colors = gameState.selectedTheme.playerColor(at: index)
 
         return VStack(alignment: .leading, spacing: 6) {
-            Text("\(player.name)'s Pairs")
-                .font(.system(size: 13, weight: .semibold))
-                .lineLimit(1)
+            HStack(spacing: 4) {
+                if player.name == "Computer" && gameState.isVsComputer {
+                    Image(systemName: "desktopcomputer")
+                        .font(.system(size: 11))
+                }
+                Text("\(player.name)'s Pairs")
+                    .font(.system(size: 13, weight: .semibold))
+                    .lineLimit(1)
+            }
 
             let pairColumns = Array(repeating: GridItem(.fixed(36), spacing: 4), count: 4)
             LazyVGrid(columns: pairColumns, spacing: 4) {
@@ -153,6 +192,33 @@ struct GameBoardView: View {
                 .clipShape(RoundedRectangle(cornerRadius: 10))
                 .shadow(color: .black.opacity(0.2), radius: 8, y: 4)
                 .padding(.top, 8)
+
+            Spacer()
+        }
+    }
+
+    // MARK: - Computer Thinking Overlay
+
+    private var computerThinkingOverlay: some View {
+        VStack {
+            HStack(spacing: 8) {
+                HStack(spacing: 4) {
+                    ForEach(0..<3, id: \.self) { _ in
+                        Circle()
+                            .fill(.white)
+                            .frame(width: 6, height: 6)
+                    }
+                }
+                Text("Computer is thinking...")
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundStyle(.white)
+            }
+            .padding(.horizontal, 20)
+            .padding(.vertical, 10)
+            .background(Color(white: 0.3))
+            .clipShape(RoundedRectangle(cornerRadius: 10))
+            .shadow(color: .black.opacity(0.2), radius: 8, y: 4)
+            .padding(.top, 8)
 
             Spacer()
         }
