@@ -47,7 +47,7 @@ struct PlayerSetupView: View {
                 Circle().fill(.red).frame(width: 14, height: 14)
             }
 
-            Text("Memory Match Games")
+            Text("EmojiPairs")
                 .font(.system(size: 26, weight: .bold))
                 .foregroundStyle(gameState.selectedTheme.titleGradient)
 

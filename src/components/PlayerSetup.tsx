@@ -165,7 +165,7 @@ const PlayerSetup: React.FC<PlayerSetupProps> = ({
               ? 'bg-gradient-to-r from-blue-600 via-yellow-500 to-red-500 bg-clip-text text-transparent'
               : 'bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent'
           }`}>
-            Memory Match Games
+            EmojiPairs
           </h1>
           {isOlympics && (
             <p className="text-sm text-gray-500 font-medium tracking-wide uppercase">
