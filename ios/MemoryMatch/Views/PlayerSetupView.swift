@@ -22,6 +22,7 @@ struct PlayerSetupView: View {
     private var mainCard: some View {
         VStack(spacing: 20) {
             header
+            gameModeSection
             playersSection
             startButton
             themeSection
@@ -60,6 +61,117 @@ struct PlayerSetupView: View {
         }
     }
 
+    // MARK: - Game Mode Section
+
+    private var gameModeSection: some View {
+        let isOlympics = gameState.selectedTheme.isOlympics
+
+        return VStack(alignment: .leading, spacing: 10) {
+            Text("Game Mode")
+                .font(.system(size: 18, weight: .bold))
+                .foregroundStyle(
+                    isOlympics
+                        ? Color(red: 0.15, green: 0.3, blue: 0.6)
+                        : Color(red: 0.4, green: 0.15, blue: 0.6)
+                )
+
+            // Mode selector buttons
+            HStack(spacing: 8) {
+                gameModeButton(mode: .multiplayer, label: "Multiplayer", icon: "person.3.fill")
+                gameModeButton(mode: .vsComputer, label: "vs Computer", icon: "desktopcomputer")
+                gameModeButton(mode: .solo, label: "Solo", icon: "person.fill")
+            }
+
+            // Difficulty selector for vs-computer
+            if gameState.gameMode == .vsComputer {
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("Difficulty")
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundStyle(gameState.selectedTheme.accentColor)
+
+                    HStack(spacing: 8) {
+                        ForEach(ComputerDifficulty.allCases, id: \.rawValue) { difficulty in
+                            difficultyButton(difficulty)
+                        }
+                    }
+                }
+            }
+
+            // Solo mode description
+            if gameState.gameMode == .solo {
+                Text("Match all pairs on your own. See how few turns you can do it in!")
+                    .font(.system(size: 13))
+                    .foregroundStyle(gameState.selectedTheme.accentColor)
+            }
+        }
+        .padding(12)
+        .background(gameState.selectedTheme.lightBackground)
+        .clipShape(RoundedRectangle(cornerRadius: 10))
+    }
+
+    private func gameModeButton(mode: GameMode, label: String, icon: String) -> some View {
+        let isSelected = gameState.gameMode == mode
+        let isOlympics = gameState.selectedTheme.isOlympics
+
+        return Button {
+            withAnimation(.easeInOut(duration: 0.2)) {
+                gameState.switchGameMode(to: mode)
+            }
+        } label: {
+            HStack(spacing: 4) {
+                Image(systemName: icon)
+                    .font(.system(size: 12))
+                Text(label)
+                    .font(.system(size: 12))
+                    .lineLimit(1)
+            }
+            .frame(maxWidth: .infinity)
+            .frame(height: 44)
+            .background(
+                isSelected
+                    ? AnyShapeStyle(isOlympics ? Color.blue : Color(red: 0.58, green: 0.27, blue: 0.83))
+                    : AnyShapeStyle(Color.white)
+            )
+            .foregroundStyle(isSelected ? .white : .primary)
+            .clipShape(RoundedRectangle(cornerRadius: 8))
+        }
+    }
+
+    private func difficultyButton(_ difficulty: ComputerDifficulty) -> some View {
+        let isSelected = gameState.computerDifficulty == difficulty
+        let isOlympics = gameState.selectedTheme.isOlympics
+
+        return Button {
+            withAnimation(.easeInOut(duration: 0.2)) {
+                gameState.computerDifficulty = difficulty
+            }
+        } label: {
+            VStack(spacing: 2) {
+                Text(difficulty.label)
+                    .font(.system(size: 13, weight: .medium))
+                Text(difficulty.description)
+                    .font(.system(size: 10))
+                    .opacity(isSelected ? 0.8 : 0.5)
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 8)
+            .background(
+                isSelected
+                    ? AnyShapeStyle(isOlympics ? Color.blue.opacity(0.85) : Color(red: 0.58, green: 0.27, blue: 0.83).opacity(0.85))
+                    : AnyShapeStyle(Color.white)
+            )
+            .foregroundStyle(isSelected ? .white : .primary)
+            .clipShape(RoundedRectangle(cornerRadius: 8))
+            .overlay(
+                RoundedRectangle(cornerRadius: 8)
+                    .strokeBorder(
+                        isSelected ? Color.clear : Color.gray.opacity(0.2),
+                        lineWidth: 1
+                    )
+            )
+        }
+    }
+
     // MARK: - Players Section
 
     private var playersSection: some View {
@@ -67,22 +179,28 @@ struct PlayerSetupView: View {
 
         return VStack(alignment: .leading, spacing: 8) {
             HStack {
-                Text("Competitors")
+                Text(playersSectionTitle)
                     .font(.system(size: 18, weight: .semibold))
                     .foregroundStyle(gameState.selectedTheme.accentColor)
                 Spacer()
-                Text("\(gameState.players.count)/5 players")
-                    .font(.system(size: 13))
-                    .foregroundStyle(.secondary)
+                if gameState.gameMode == .multiplayer {
+                    Text("\(gameState.players.count)/5 players")
+                        .font(.system(size: 13))
+                        .foregroundStyle(.secondary)
+                }
             }
 
             // Player list
             ForEach(Array(gameState.players.enumerated()), id: \.element.id) { index, player in
-                playerRow(index: index, player: player)
+                if player.name == "Computer" && gameState.gameMode == .vsComputer {
+                    computerPlayerRow(index: index)
+                } else {
+                    playerRow(index: index, player: player)
+                }
             }
 
-            // Add player button
-            if gameState.players.count < 5 {
+            // Add player button (multiplayer only)
+            if gameState.gameMode == .multiplayer && gameState.players.count < 5 {
                 Button {
                     withAnimation { gameState.addPlayer() }
                 } label: {
@@ -106,35 +224,69 @@ struct PlayerSetupView: View {
         }
     }
 
+    private var playersSectionTitle: String {
+        switch gameState.gameMode {
+        case .multiplayer: "Competitors"
+        case .vsComputer: "Players"
+        case .solo: "Player"
+        }
+    }
+
+    private func computerPlayerRow(index: Int) -> some View {
+        HStack(spacing: 8) {
+            // Player number badge with computer icon
+            let colors = gameState.selectedTheme.playerColor(at: index)
+            Image(systemName: "desktopcomputer")
+                .font(.system(size: 13, weight: .bold))
+                .foregroundStyle(colors.text)
+                .frame(width: 30, height: 30)
+                .background(colors.bg)
+                .clipShape(Circle())
+
+            Text("Computer (\(gameState.computerDifficulty.label.lowercased()))")
+                .foregroundStyle(.secondary)
+                .italic()
+                .padding(.horizontal, 12)
+                .padding(.vertical, 8)
+
+            Spacer()
+        }
+        .padding(6)
+        .background(Color(white: 0.96))
+        .clipShape(RoundedRectangle(cornerRadius: 10))
+    }
+
     private func playerRow(index: Int, player: Player) -> some View {
         HStack(spacing: 8) {
-            // Move up/down buttons
-            VStack(spacing: 0) {
-                Button {
-                    guard index > 0 else { return }
-                    withAnimation(.easeInOut(duration: 0.2)) {
-                        gameState.movePlayer(from: IndexSet(integer: index), to: index - 1)
+            // Move up/down buttons (multiplayer only)
+            if gameState.gameMode == .multiplayer {
+                VStack(spacing: 0) {
+                    Button {
+                        guard index > 0 else { return }
+                        withAnimation(.easeInOut(duration: 0.2)) {
+                            gameState.movePlayer(from: IndexSet(integer: index), to: index - 1)
+                        }
+                    } label: {
+                        Image(systemName: "chevron.up")
+                            .font(.system(size: 11, weight: .semibold))
+                            .foregroundStyle(index > 0 ? .secondary : .quaternary)
+                            .frame(width: 28, height: 20)
                     }
-                } label: {
-                    Image(systemName: "chevron.up")
-                        .font(.system(size: 11, weight: .semibold))
-                        .foregroundStyle(index > 0 ? .secondary : .quaternary)
-                        .frame(width: 28, height: 20)
-                }
-                .disabled(index == 0)
+                    .disabled(index == 0)
 
-                Button {
-                    guard index < gameState.players.count - 1 else { return }
-                    withAnimation(.easeInOut(duration: 0.2)) {
-                        gameState.movePlayer(from: IndexSet(integer: index), to: index + 2)
+                    Button {
+                        guard index < gameState.players.count - 1 else { return }
+                        withAnimation(.easeInOut(duration: 0.2)) {
+                            gameState.movePlayer(from: IndexSet(integer: index), to: index + 2)
+                        }
+                    } label: {
+                        Image(systemName: "chevron.down")
+                            .font(.system(size: 11, weight: .semibold))
+                            .foregroundStyle(index < gameState.players.count - 1 ? .secondary : .quaternary)
+                            .frame(width: 28, height: 20)
                     }
-                } label: {
-                    Image(systemName: "chevron.down")
-                        .font(.system(size: 11, weight: .semibold))
-                        .foregroundStyle(index < gameState.players.count - 1 ? .secondary : .quaternary)
-                        .frame(width: 28, height: 20)
+                    .disabled(index >= gameState.players.count - 1)
                 }
-                .disabled(index >= gameState.players.count - 1)
             }
 
             // Player number badge
@@ -167,8 +319,8 @@ struct PlayerSetupView: View {
                     )
             )
 
-            // Remove button
-            if gameState.players.count > 2 {
+            // Remove button (multiplayer only, min 2 players)
+            if gameState.gameMode == .multiplayer && gameState.players.count > 2 {
                 Button {
                     withAnimation { gameState.removePlayer(at: index) }
                 } label: {
@@ -191,7 +343,7 @@ struct PlayerSetupView: View {
             Button {
                 gameState.startGame()
             } label: {
-                Text(gameState.selectedTheme.isOlympics ? "Let the Games Begin!" : "Let's Play!")
+                Text(startButtonText)
                     .font(.system(size: 18, weight: .semibold))
                     .foregroundStyle(.white)
                     .frame(maxWidth: .infinity)
@@ -207,11 +359,28 @@ struct PlayerSetupView: View {
             .opacity(gameState.hasEmptyNames ? 0.5 : 1.0)
 
             if gameState.hasEmptyNames {
-                Text("All players need a name to compete")
+                Text(emptyNamesMessage)
                     .font(.system(size: 13))
                     .foregroundStyle(.red.opacity(0.6))
             }
         }
+    }
+
+    private var startButtonText: String {
+        switch gameState.gameMode {
+        case .solo:
+            return "Start Training"
+        case .vsComputer:
+            return "Challenge Computer"
+        case .multiplayer:
+            return gameState.selectedTheme.isOlympics ? "Let the Games Begin!" : "Let's Play!"
+        }
+    }
+
+    private var emptyNamesMessage: String {
+        gameState.gameMode == .multiplayer
+            ? "All players need a name to compete"
+            : "Enter your name to start"
     }
 
     // MARK: - Theme Picker
