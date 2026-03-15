@@ -451,18 +451,31 @@ final class GameState {
     private func logGameCompletion() {
         guard let startTime = gameStartTime else { return }
         let duration = Int(Date().timeIntervalSince(startTime))
-        let winnerNames = winners.map(\.name)
+
+        // Filter out "Computer" from logs — only log human players
+        let humanPlayers = players.filter { $0.name != "Computer" }
+        let winnerNames = winners.map(\.name).filter { $0 != "Computer" }
 
         Task {
             await SupabaseService.shared.logGame(
-                playerNames: players.map(\.name),
-                playerScores: players.map(\.score),
+                playerNames: humanPlayers.map(\.name),
+                playerScores: humanPlayers.map(\.score),
                 winnerNames: winnerNames,
                 theme: selectedTheme.rawValue,
                 numPairs: numPairs,
-                numPlayers: players.count,
+                numPlayers: humanPlayers.count,
                 durationSeconds: duration
             )
         }
+
+        // Submit to Game Center
+        GameCenterManager.shared.reportGameCompletion(
+            gameMode: gameMode,
+            soloTurns: soloTurns,
+            numPairs: numPairs,
+            playerScore: players.first?.score ?? 0,
+            computerScore: isVsComputer ? (players.last?.score ?? 0) : nil,
+            difficulty: computerDifficulty
+        )
     }
 }

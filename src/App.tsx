@@ -91,16 +91,18 @@ const App: React.FC = () => {
   const logGameToSupabase = async () => {
     if (!supabase) return;
     const durationSeconds = Math.round((Date.now() - gameStartTimeRef.current) / 1000);
-    const highScore = Math.max(...players.map(p => p.score));
-    const winners = players.filter(p => p.score === highScore).map(p => p.name);
+    // Filter out "Computer" from logs — only log human players
+    const humanPlayers = players.filter(p => p.name !== 'Computer');
+    const highScore = Math.max(...humanPlayers.map(p => p.score));
+    const winners = humanPlayers.filter(p => p.score === highScore).map(p => p.name);
     try {
       await supabase.from('mem_game_logs').insert({
-        player_names: players.map(p => p.name),
-        player_scores: players.map(p => p.score),
+        player_names: humanPlayers.map(p => p.name),
+        player_scores: humanPlayers.map(p => p.score),
         winner_names: winners,
         theme: selectedTheme,
         num_pairs: numPairs,
-        num_players: players.length,
+        num_players: humanPlayers.length,
         duration_seconds: durationSeconds,
       });
     } catch {}

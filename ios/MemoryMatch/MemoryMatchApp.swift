@@ -9,6 +9,9 @@ struct MemoryMatchApp: App {
             ContentView()
                 .environment(gameState)
                 .preferredColorScheme(.light)
+                .onAppear {
+                    GameCenterManager.shared.authenticate()
+                }
         }
     }
 }

@@ -33,5 +33,6 @@ targets:
     dependencies:
       - package: Supabase
         product: Supabase
+      - sdk: GameKit.framework
     entitlements:
       path: MemoryMatch/MemoryMatch.entitlements
