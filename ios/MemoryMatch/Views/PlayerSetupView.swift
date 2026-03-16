@@ -330,8 +330,8 @@ struct PlayerSetupView: View {
 
             // Name field
             TextField("Player \(index + 1) name", text: Binding(
-                get: { gameState.players[index].name },
-                set: { gameState.updatePlayerName(at: index, to: $0) }
+                get: { index < gameState.players.count ? gameState.players[index].name : "" },
+                set: { if index < gameState.players.count { gameState.updatePlayerName(at: index, to: $0) } }
             ))
             .textFieldStyle(.plain)
             .foregroundStyle(.primary)

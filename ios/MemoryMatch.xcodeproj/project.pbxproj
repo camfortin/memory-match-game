@@ -18,6 +18,7 @@
 		C3FABEC605859BB58B5B822C /* MemoryMatchApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86D936F176D0841C13B3BB03 /* MemoryMatchApp.swift */; };
 		DA6C3A7C4FFCA0113BC8FF60 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01A4EED5F348E69EB2F73316 /* ContentView.swift */; };
 		DD71D64067050396E1738D7F /* SupabaseService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8519E03FE30B31A23EA5ECB3 /* SupabaseService.swift */; };
+		E1A2B3C4D5E6F7A8B9C0D1E2 /* GameCenterManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6A7B8C9D0E1F2 /* GameCenterManager.swift */; };
 		ECAB94F664EB95F6CFA3CF8A /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = E294D322232F7F2EA5661A35 /* Supabase */; };
 /* End PBXBuildFile section */
 
@@ -30,6 +31,7 @@
 		5ECBD552A6613F5424AC2765 /* GameState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameState.swift; sourceTree = "<group>"; };
 		7AB6629A1B16B58D7ED36236 /* MemoryMatch.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = MemoryMatch.entitlements; sourceTree = "<group>"; };
 		8519E03FE30B31A23EA5ECB3 /* SupabaseService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabaseService.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F6A7B8C9D0E1F2 /* GameCenterManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameCenterManager.swift; sourceTree = "<group>"; };
 		86D936F176D0841C13B3BB03 /* MemoryMatchApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoryMatchApp.swift; sourceTree = "<group>"; };
 		A627AD65593EFE6EA77892B0 /* GameBoardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameBoardView.swift; sourceTree = "<group>"; };
 		AA02AB8FDEB491053CC7726B /* MemoryMatch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MemoryMatch.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -75,6 +77,7 @@
 		5145B93581CD1166864E8BA0 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				A1B2C3D4E5F6A7B8C9D0E1F2 /* GameCenterManager.swift */,
 				8519E03FE30B31A23EA5ECB3 /* SupabaseService.swift */,
 			);
 			path = Services;
@@ -184,6 +187,7 @@
 				DA6C3A7C4FFCA0113BC8FF60 /* ContentView.swift in Sources */,
 				491119B1FB070D510C394B87 /* GameBoardView.swift in Sources */,
 				78935FE60D0900F55371CB2F /* GameOverView.swift in Sources */,
+				E1A2B3C4D5E6F7A8B9C0D1E2 /* GameCenterManager.swift in Sources */,
 				628829D8B13416A192D6B6CD /* GameState.swift in Sources */,
 				C3FABEC605859BB58B5B822C /* MemoryMatchApp.swift in Sources */,
 				742912FFA761DA069DA28BB5 /* Player.swift in Sources */,
