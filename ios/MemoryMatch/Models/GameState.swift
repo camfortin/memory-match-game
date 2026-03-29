@@ -195,12 +195,13 @@ final class GameState {
         }
     }
 
-    func endGame() {
-        gameOver = true
+    func returnToSetup() {
         gameStarted = false
+        gameOver = false
         isComputerThinking = false
         computerTurnInProgress = false
         isProcessing = false
+        showTurnMessage = false
         for i in players.indices {
             players[i].score = 0
             players[i].pairs = []
@@ -262,6 +263,7 @@ final class GameState {
         guard !computerTurnInProgress else { return }
 
         computerTurnInProgress = true
+        showTurnMessage = false
         isComputerThinking = true
 
         let availableCards = cards.filter { !$0.isMatched && !$0.isFlipped }
@@ -349,7 +351,8 @@ final class GameState {
         }
 
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
-            guard let self, !self.gameOver else { return }
+            guard let self, !self.gameOver,
+                  self.currentPlayer < self.players.count else { return }
 
             withAnimation(.easeInOut(duration: 0.3)) {
                 for i in self.cards.indices {

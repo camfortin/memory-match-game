@@ -17,7 +17,7 @@ struct GameBoardView: View {
             }
 
             // Turn notification overlay
-            if gameState.showTurnMessage {
+            if gameState.showTurnMessage && !gameState.isComputerThinking {
                 turnMessageOverlay
                     .transition(.move(edge: .top).combined(with: .opacity))
             }
@@ -57,7 +57,7 @@ struct GameBoardView: View {
                 Spacer()
 
                 Button {
-                    gameState.endGame()
+                    gameState.returnToSetup()
                 } label: {
                     HStack(spacing: 4) {
                         Image(systemName: "arrow.counterclockwise")
@@ -202,13 +202,7 @@ struct GameBoardView: View {
     private var computerThinkingOverlay: some View {
         VStack {
             HStack(spacing: 8) {
-                HStack(spacing: 4) {
-                    ForEach(0..<3, id: \.self) { _ in
-                        Circle()
-                            .fill(.white)
-                            .frame(width: 6, height: 6)
-                    }
-                }
+                ThinkingDotsView()
                 Text("Computer is thinking...")
                     .font(.system(size: 14, weight: .medium))
                     .foregroundStyle(.white)
@@ -222,5 +216,27 @@ struct GameBoardView: View {
 
             Spacer()
         }
+    }
+}
+
+private struct ThinkingDotsView: View {
+    @State private var isAnimating = false
+
+    var body: some View {
+        HStack(spacing: 4) {
+            ForEach(0..<3, id: \.self) { index in
+                Circle()
+                    .fill(.white)
+                    .frame(width: 6, height: 6)
+                    .offset(y: isAnimating ? -4 : 2)
+                    .animation(
+                        .easeInOut(duration: 0.5)
+                            .repeatForever(autoreverses: true)
+                            .delay(Double(index) * 0.15),
+                        value: isAnimating
+                    )
+            }
+        }
+        .onAppear { isAnimating = true }
     }
 }

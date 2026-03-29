@@ -40,12 +40,14 @@ struct PlayerSetupView: View {
     private var header: some View {
         VStack(spacing: 4) {
             // Olympic rings
-            HStack(spacing: 4) {
-                Circle().fill(.blue).frame(width: 14, height: 14)
-                Circle().fill(.yellow).frame(width: 14, height: 14)
-                Circle().fill(Color(white: 0.2)).frame(width: 14, height: 14)
-                Circle().fill(.green).frame(width: 14, height: 14)
-                Circle().fill(.red).frame(width: 14, height: 14)
+            if gameState.selectedTheme.isOlympics {
+                HStack(spacing: 4) {
+                    Circle().fill(.blue).frame(width: 14, height: 14)
+                    Circle().fill(.yellow).frame(width: 14, height: 14)
+                    Circle().fill(Color(white: 0.2)).frame(width: 14, height: 14)
+                    Circle().fill(.green).frame(width: 14, height: 14)
+                    Circle().fill(.red).frame(width: 14, height: 14)
+                }
             }
 
             Text("EmojiPairs")

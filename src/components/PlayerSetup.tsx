@@ -153,13 +153,15 @@ const PlayerSetup: React.FC<PlayerSetupProps> = ({
       <div className="bg-white rounded-xl shadow-xl p-4 sm:p-6 space-y-5 sm:space-y-6">
         {/* Olympic Header */}
         <div className="text-center space-y-1">
-          <div className="flex justify-center gap-1 text-2xl">
-            <span className="text-blue-500">&#9679;</span>
-            <span className="text-yellow-400">&#9679;</span>
-            <span className="text-gray-800">&#9679;</span>
-            <span className="text-green-500">&#9679;</span>
-            <span className="text-red-500">&#9679;</span>
-          </div>
+          {isOlympics && (
+            <div className="flex justify-center gap-1 text-2xl">
+              <span className="text-blue-500">&#9679;</span>
+              <span className="text-yellow-400">&#9679;</span>
+              <span className="text-gray-800">&#9679;</span>
+              <span className="text-green-500">&#9679;</span>
+              <span className="text-red-500">&#9679;</span>
+            </div>
+          )}
           <h1 className={`text-2xl sm:text-3xl font-bold text-center ${
             isOlympics
               ? 'bg-gradient-to-r from-blue-600 via-yellow-500 to-red-500 bg-clip-text text-transparent'

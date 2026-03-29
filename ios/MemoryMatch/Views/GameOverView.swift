@@ -41,7 +41,7 @@ struct GameOverView: View {
 
             // Play Again button
             Button {
-                gameState.endGame()
+                gameState.returnToSetup()
             } label: {
                 Text(playAgainButtonText)
                     .font(.system(size: 17, weight: .semibold))

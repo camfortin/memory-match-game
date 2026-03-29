@@ -205,6 +205,7 @@ const GameBoard: React.FC<GameBoardProps> = ({
     if (computerTurnInProgress.current) return;
 
     computerTurnInProgress.current = true;
+    setShowTurnMessage(false);
     setIsComputerThinking(true);
 
     const availableCards = cards.filter(c => !c.isMatched && !c.isFlipped);
@@ -299,7 +300,7 @@ const GameBoard: React.FC<GameBoardProps> = ({
 
   return (
     <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-8">
-      {showTurnMessage && (
+      {showTurnMessage && !isComputerThinking && (
         <div className={`fixed top-4 left-1/2 transform -translate-x-1/2 px-6 py-3 rounded-lg shadow-lg z-50 text-sm sm:text-base ${
           isOlympics
             ? `${olympicPlayerColors[currentPlayer % olympicPlayerColors.length].bg} text-white`
