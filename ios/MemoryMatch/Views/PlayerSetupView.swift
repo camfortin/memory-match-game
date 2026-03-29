@@ -61,32 +61,39 @@ struct PlayerSetupView: View {
 
             // Game Center buttons
             if GameCenterManager.shared.isAuthenticated {
-                HStack(spacing: 16) {
-                    Button {
-                        GameCenterManager.shared.showLeaderboard()
-                    } label: {
-                        HStack(spacing: 4) {
-                            Image(systemName: "trophy.fill")
-                                .font(.system(size: 13))
-                            Text("Leaderboards")
-                                .font(.system(size: 13))
-                        }
-                        .foregroundStyle(gameState.selectedTheme.accentColor)
-                    }
+                VStack(spacing: 6) {
+                    Text("Game Center")
+                        .font(.system(size: 12, weight: .semibold))
+                        .foregroundStyle(.secondary)
+                        .tracking(1)
 
-                    Button {
-                        GameCenterManager.shared.showAchievements()
-                    } label: {
-                        HStack(spacing: 4) {
-                            Image(systemName: "medal.fill")
-                                .font(.system(size: 13))
-                            Text("Achievements")
-                                .font(.system(size: 13))
+                    HStack(spacing: 16) {
+                        Button {
+                            GameCenterManager.shared.showLeaderboard()
+                        } label: {
+                            HStack(spacing: 4) {
+                                Image(systemName: "trophy.fill")
+                                    .font(.system(size: 13))
+                                Text("Leaderboards")
+                                    .font(.system(size: 13))
+                            }
+                            .foregroundStyle(gameState.selectedTheme.accentColor)
                         }
-                        .foregroundStyle(gameState.selectedTheme.accentColor)
+
+                        Button {
+                            GameCenterManager.shared.showAchievements()
+                        } label: {
+                            HStack(spacing: 4) {
+                                Image(systemName: "medal.fill")
+                                    .font(.system(size: 13))
+                                Text("Achievements")
+                                    .font(.system(size: 13))
+                            }
+                            .foregroundStyle(gameState.selectedTheme.accentColor)
+                        }
                     }
                 }
-                .padding(.top, 4)
+                .padding(.top, 6)
             }
         }
     }

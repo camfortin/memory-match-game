@@ -196,7 +196,11 @@ final class GameState {
     }
 
     func endGame() {
+        gameOver = true
         gameStarted = false
+        isComputerThinking = false
+        computerTurnInProgress = false
+        isProcessing = false
         for i in players.indices {
             players[i].score = 0
             players[i].pairs = []
@@ -345,7 +349,7 @@ final class GameState {
         }
 
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
-            guard let self else { return }
+            guard let self, !self.gameOver else { return }
 
             withAnimation(.easeInOut(duration: 0.3)) {
                 for i in self.cards.indices {
